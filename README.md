@@ -17,4 +17,4 @@ Try to implement what you want/need to. This is your userspace, take care of it!
 • Connect to the Internet.  
 
 ## For more informations
-Read : https://cdn.intra.42.fr/pdf/pdf/3512/21sh.en.pdf
+Read : https://github.com/oulhafiane/1337-42-ft_linux/blob/main/en.subject.pdf
