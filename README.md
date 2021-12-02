@@ -3,8 +3,8 @@
 Make your own linux distribution
 
 ## Introduction
-Welcome to ft_linux. In this subject, you have to build a basic, but functional, linux
-distribution.  
+Welcome to ft_linux.  
+In this subject, you have to build a basic, but functional, linux distribution.  
 This subject is not about Kernel programming, but it’s highly related.  
 This distro will be the base for all your kernel projects, because all your kernel-code will
 be executed here, on your distro.  
