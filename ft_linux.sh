@@ -103,8 +103,9 @@ mkdir -v $LFS/sources
 chmod -v a+wt $LFS/sources
 
 # Download all of the packages and patches by using wget-list
-cd ~ && wget https://raw.githubusercontent.com/oulhafiane/1337-42-ft_linux/main/wget-list
-wget --input-file=wget-list --continue --directory-prefix=$LFS/sources 2&> /dev/null
+#cd ~ && wget https://raw.githubusercontent.com/oulhafiane/1337-42-ft_linux/main/wget-list
+#wget --input-file=wget-list --continue --directory-prefix=$LFS/sources 2&> /dev/null
+cp -rv /tmp/sources/* $LFS/sources/
 pushd $LFS/sources
   md5sum -c md5sums
 popd
