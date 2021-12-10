@@ -31,14 +31,14 @@ Vagrant.configure("2") do |config|
 		master.vm.provision "file", source: "./ft_linux2.sh", destination: "~/ft_linux2.sh"
 		master.vm.provision "file", source: "./ft_linux2.sh", destination: "~/ft_linux3.sh"
 		master.vm.provision "shell", privileged: true, inline: "cp /home/vagrant/* ~/ && mkdir ~/.ssh && cat /tmp/id_rsa.pub >> ~/.ssh/authorized_keys"
-		#master.trigger.after :up do |trigger|
-        #    trigger.name = "ft_linux.sh"
-        #    trigger.run = {"inline": "ssh -o ConnectTimeout=120 -o StrictHostKeyChecking=no root@192.168.42.110 'bash -s -- uno < ~/ft_linux.sh'"}
-		#end
-		#master.trigger.after :up do |trigger|
-        #    trigger.name = "ft_linux2.sh"
-        #    trigger.run = {"inline": 'ssh -o ConnectTimeout=120 -o StrictHostKeyChecking=no lfs@192.168.42.110 "cat ~/ft_linux2.sh | exec env -i HOME=$HOME TERM=$TERM PS1=\u:\w\$\  /bin/bash"'}
-		#end
+		master.trigger.after :up do |trigger|
+            trigger.name = "ft_linux.sh"
+            trigger.run = {"inline": "ssh -o ConnectTimeout=120 -o StrictHostKeyChecking=no root@192.168.42.110 'bash -s -- uno < ~/ft_linux.sh'"}
+		end
+		master.trigger.after :up do |trigger|
+            trigger.name = "ft_linux2.sh"
+            trigger.run = {"inline": 'ssh -o ConnectTimeout=120 -o StrictHostKeyChecking=no lfs@192.168.42.110 "cat ~/ft_linux2.sh | exec env -i HOME=$HOME TERM=$TERM PS1=\u:\w\$\  /bin/bash"'}
+		end
 		master.trigger.after :up do |trigger|
             trigger.name = "ft_linux3.sh"
             trigger.run = {"inline": "ssh -o ConnectTimeout=120 -o StrictHostKeyChecking=no root@192.168.42.110 'bash -s -- uno < ~/ft_linux3.sh'"}

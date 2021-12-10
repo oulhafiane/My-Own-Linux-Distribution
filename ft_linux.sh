@@ -29,39 +29,15 @@ p
 
 +2G
 n
-e
-
-
-
-n
-
-+2G
-n
-
-+5G
-n
-
-+5G
-n
-
-+2G
-n
-
-+5G
-n
-
-
 p
+
+
+
 w
 EOF
 mkswap /dev/sdb2
 echo y | mkfs -v -t ext2 /dev/sdb1
-echo y | mkfs -v -t ext4 /dev/sdb5
-echo y | mkfs -v -t ext4 /dev/sdb6
-echo y | mkfs -v -t ext4 /dev/sdb7
-echo y | mkfs -v -t ext4 /dev/sdb8
-echo y | mkfs -v -t ext4 /dev/sdb9
-echo y | mkfs -v -t ext4 /dev/sdb10
+echo y | mkfs -v -t ext4 /dev/sdb3
 
 # Setting The $LFS Variable
 echo "export LFS=/mnt/lfs" > /etc/profile.d/00-lfs-env.sh
@@ -71,30 +47,20 @@ echo $LFS
 # Mounting the new partitions
 cat >> /etc/fstab << EOF
 /dev/sdb2	none	swap	sw	0	0
-/dev/sdb10	/mnt/lfs	ext4	defaults	0	2
+/dev/sdb3	/mnt/lfs	ext4	defaults	0	2
 /dev/sdb1	/mnt/lfs/boot	ext2	defaults	0	2
-/dev/sdb5	/mnt/lfs/home	ext4	defaults	0	2
-/dev/sdb6	/mnt/lfs/usr	ext4	defaults	0	2
-/dev/sdb7	/mnt/lfs/opt	ext4	defaults	0	2
-/dev/sdb8	/mnt/lfs/tmp	ext4	defaults	0	2
-/dev/sdb9	/mnt/lfs/usr/src	ext4	defaults	0	2
 EOF
 
 /sbin/swapon -v /dev/sdb2
 mkdir -pv $LFS
-mount -v -t ext4 /dev/sdb10 $LFS
+mount -v -t ext4 /dev/sdb3 $LFS
 mkdir -v $LFS/boot
 mount -v -t ext2 /dev/sdb1 $LFS/boot
 mkdir -v $LFS/home
-mount -v -t ext4 /dev/sdb5 $LFS/home
 mkdir -v $LFS/usr
-mount -v -t ext4 /dev/sdb6 $LFS/usr
 mkdir -v $LFS/opt
-mount -v -t ext4 /dev/sdb7 $LFS/opt
 mkdir -v $LFS/tmp
-mount -v -t ext4 /dev/sdb8 $LFS/tmp
 mkdir -v $LFS/usr/src
-mount -v -t ext4 /dev/sdb9 $LFS/usr/src
 
 # Creating sources folders where downloaded packages will be stored
 mkdir -v $LFS/sources

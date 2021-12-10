@@ -1231,4 +1231,492 @@ rm -Rf tar-1.34
 
 # Texinfo-6.8
 # The Texinfo package contains programs for reading, writing, and converting info pages.
+tar -xf texinfo-6.8.tar.xz
+cd texinfo-6.8
+./configure --prefix=/usr
+sed -e 's/__attribute_nonnull__/__nonnull/' \
+    -i gnulib/lib/malloc/dynarray-skeleton.c
+make
+make install
+make TEXMF=/usr/share/texmf install-tex
+pushd /usr/share/info
+  rm -v dir
+  for f in *
+    do install-info $f dir 2>/dev/null
+  done
+popd
+cd /sources
+rm -Rf texinfo-6.8
 
+# Vim-8.2.3337
+# The Vim package contains a powerful text editor.
+tar -xf vim-8.2.3337.tar.gz
+cd vim-8.2.3337
+echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
+./configure --prefix=/usr
+make
+make install
+ln -sv vim /usr/bin/vi
+for L in  /usr/share/man/{,*/}man1/vim.1; do
+    ln -sv vim.1 $(dirname $L)/vi.1
+done
+ln -sv ../vim/vim82/doc /usr/share/doc/vim-8.2.3337
+cat > /etc/vimrc << "EOF"
+" Begin /etc/vimrc
+
+" Ensure defaults are set before customizing settings, not after
+source $VIMRUNTIME/defaults.vim
+let skip_defaults_vim=1
+
+set nocompatible
+set backspace=2
+set mouse=
+syntax on
+if (&term == "xterm") || (&term == "putty")
+  set background=dark
+endif
+
+" End /etc/vimrc
+EOF
+cd /sources
+rm -Rf vim-8.2.3337
+
+# Eudev-3.2.10
+# The Eudev package contains programs for dynamic creation of device nodes.
+tar -xf eudev-3.2.10.tar.gz
+cd eudev-3.2.10
+./configure --prefix=/usr           \
+            --bindir=/usr/sbin      \
+            --sysconfdir=/etc       \
+            --enable-manpages       \
+            --disable-static
+make
+mkdir -pv /usr/lib/udev/rules.d
+mkdir -pv /etc/udev/rules.d
+make install
+tar -xvf ../udev-lfs-20171102.tar.xz
+make -f udev-lfs-20171102/Makefile.lfs install
+udevadm hwdb --update
+cd /sources
+rm -Rf eudev-3.2.10
+
+# Man-DB-2.9.4
+# The Man-DB package contains programs for finding and viewing man pages.
+tar -xf man-db-2.9.4.tar.xz
+cd man-db-2.9.4
+./configure --prefix=/usr                        \
+            --docdir=/usr/share/doc/man-db-2.9.4 \
+            --sysconfdir=/etc                    \
+            --disable-setuid                     \
+            --enable-cache-owner=bin             \
+            --with-browser=/usr/bin/lynx         \
+            --with-vgrind=/usr/bin/vgrind        \
+            --with-grap=/usr/bin/grap            \
+            --with-systemdtmpfilesdir=           \
+            --with-systemdsystemunitdir=
+make
+make install
+cd /sources
+rm -Rf man-db-2.9.4
+
+# Procps-ng-3.3.17
+# The Procps-ng package contains programs for monitoring processes.
+tar -xf procps-ng-3.3.17.tar.xz
+cd procps-3.3.17/
+./configure --prefix=/usr                            \
+            --docdir=/usr/share/doc/procps-ng-3.3.17 \
+            --disable-static                         \
+            --disable-kill
+make
+make install
+cd /sources
+rm -Rf procps-3.3.17/
+
+# Util-linux-2.37.2
+# The Util-linux package contains miscellaneous utility programs. Among them are utilities for handling file systems, consoles, partitions, and messages.
+tar -xf util-linux-2.37.2.tar.xz
+cd util-linux-2.37.2
+./configure ADJTIME_PATH=/var/lib/hwclock/adjtime   \
+            --libdir=/usr/lib    \
+            --docdir=/usr/share/doc/util-linux-2.37.2 \
+            --disable-chfn-chsh  \
+            --disable-login      \
+            --disable-nologin    \
+            --disable-su         \
+            --disable-setpriv    \
+            --disable-runuser    \
+            --disable-pylibmount \
+            --disable-static     \
+            --without-python     \
+            --without-systemd    \
+            --without-systemdsystemunitdir \
+            runstatedir=/run
+make
+make install
+cd /sources
+rm -Rf util-linux-2.37.2
+
+# E2fsprogs-1.46.4
+# The e2fsprogs package contains the utilities for handling the ext2 file system. It also supports the ext3 and ext4 journaling file systems.
+tar -xf e2fsprogs-1.46.4.tar.gz
+cd e2fsprogs-1.46.4
+mkdir -v build
+cd build
+../configure --prefix=/usr           \
+             --sysconfdir=/etc       \
+             --enable-elf-shlibs     \
+             --disable-libblkid      \
+             --disable-libuuid       \
+             --disable-uuidd         \
+             --disable-fsck
+make
+make install
+rm -fv /usr/lib/{libcom_err,libe2p,libext2fs,libss}.a
+gunzip -v /usr/share/info/libext2fs.info.gz
+install-info --dir-file=/usr/share/info/dir /usr/share/info/libext2fs.info
+makeinfo -o      doc/com_err.info ../lib/et/com_err.texinfo
+install -v -m644 doc/com_err.info /usr/share/info
+install-info --dir-file=/usr/share/info/dir /usr/share/info/com_err.info
+cd /sources
+rm -Rf e2fsprogs-1.46.4
+
+# Sysklogd-1.5.1
+# The sysklogd package contains programs for logging system messages, such as those given by the kernel when unusual things happen.
+tar -xf sysklogd-1.5.1.tar.gz
+cd sysklogd-1.5.1
+sed -i '/Error loading kernel symbols/{n;n;d}' ksym_mod.c
+sed -i 's/union wait/int/' syslogd.c
+make
+make BINDIR=/sbin install
+cat > /etc/syslog.conf << "EOF"
+# Begin /etc/syslog.conf
+
+auth,authpriv.* -/var/log/auth.log
+*.*;auth,authpriv.none -/var/log/sys.log
+daemon.* -/var/log/daemon.log
+kern.* -/var/log/kern.log
+mail.* -/var/log/mail.log
+user.* -/var/log/user.log
+*.emerg *
+
+# End /etc/syslog.conf
+EOF
+cd /sources
+rm -Rf sysklogd-1.5.1
+
+# Sysvinit-2.99
+# The Sysvinit package contains programs for controlling the startup, running, and shutdown of the system.
+tar -xf sysvinit-2.99.tar.xz
+cd sysvinit-2.99
+patch -Np1 -i ../sysvinit-2.99-consolidated-1.patch
+make
+make install
+cd /sources
+rm -Rf sysvinit-2.99
+
+# libtasn1-4.17.0
+# libtasn1 is a highly portable C library that encodes and decodes DER/BER data following an ASN.1 schema.
+tar -xf libtasn1-4.17.0.tar.gz
+cd libtasn1-4.17.0
+./configure --prefix=/usr --disable-static &&
+make
+make install
+make -C doc/reference install-data-local
+cd /sources
+rm -Rf libtasn1-4.17.0
+
+# p11-kit-0.24.0
+# The p11-kit package provides a way to load and enumerate PKCS #11 (a Cryptographic Token Interface Standard) modules.
+tar -xf p11-kit-0.24.0.tar.xz
+cd p11-kit-0.24.0
+sed '20,$ d' -i trust/trust-extract-compat &&
+cat >> trust/trust-extract-compat << "EOF"
+# Copy existing anchor modifications to /etc/ssl/local
+/usr/libexec/make-ca/copy-trust-modifications
+
+# Generate a new trust store
+/usr/sbin/make-ca -f -g
+EOF
+mkdir p11-build &&
+cd    p11-build &&
+
+meson --prefix=/usr       \
+      --buildtype=release \
+      -Dtrust_paths=/etc/pki/anchors &&
+ninja
+ninja install &&
+ln -sfv /usr/libexec/p11-kit/trust-extract-compat \
+        /usr/bin/update-ca-certificates
+ln -sfv ./pkcs11/p11-kit-trust.so /usr/lib/libnssckbi.so
+cd /sources
+rm -Rf p11-kit-0.24.0
+
+# make-ca-1.7
+# Public Key Infrastructure (PKI) is a method to validate the authenticity of an otherwise unknown entity across untrusted networks. PKI works by establishing a chain of trust, rather than trusting each individual host or entity explicitly. In order for a certificate presented by a remote entity to be trusted, that certificate must present a complete chain of certificates that can be validated using the root certificate of a Certificate Authority (CA) that is trusted by the local machine.
+# Establishing trust with a CA involves validating things like company address, ownership, contact information, etc., and ensuring that the CA has followed best practices, such as undergoing periodic security audits by independent investigators and maintaining an always available certificate revocation list. This is well outside the scope of BLFS (as it is for most Linux distributions).
+tar -xf make-ca-1.7.tar.xz
+cd make-ca-1.7
+make install &&
+install -vdm755 /etc/ssl/local
+/usr/sbin/make-ca -g --force
+cd /sources
+rm -Rf make-ca-1.7
+
+# Wget-1.21.1
+# The Wget package contains a utility useful for non-interactive downloading of files from the Web.
+tar -xf wget-1.21.1.tar.gz
+cd wget-1.21.1
+./configure --prefix=/usr      \
+            --sysconfdir=/etc  \
+            --with-ssl=openssl &&
+make
+make install
+cd /sources
+rm -Rf wget-1.21.1
+
+# OpenSSH-8.7p1
+# The OpenSSH package contains ssh clients and the sshd daemon. This is useful for encrypting authentication and subsequent traffic over a network. The ssh and scp commands are secure implementations of telnet and rcp respectively.
+tar -xf openssh-8.7p1.tar.gz
+cd openssh-8.7p1
+install  -v -m700 -d /var/lib/sshd &&
+chown    -v root:sys /var/lib/sshd &&
+
+groupadd -g 50 sshd        &&
+useradd  -c 'sshd PrivSep' \
+         -d /var/lib/sshd  \
+         -g sshd           \
+         -s /bin/false     \
+         -u 50 sshd
+./configure --prefix=/usr                            \
+            --sysconfdir=/etc/ssh                    \
+            --with-md5-passwords                     \
+            --with-privsep-path=/var/lib/sshd        \
+            --with-default-path=/usr/bin             \
+            --with-superuser-path=/usr/sbin:/usr/bin \
+            --with-pid-dir=/run
+make
+make install &&
+install -v -m755    contrib/ssh-copy-id /usr/bin     &&
+
+install -v -m644    contrib/ssh-copy-id.1 \
+                    /usr/share/man/man1              &&
+install -v -m755 -d /usr/share/doc/openssh-8.7p1     &&
+install -v -m644    INSTALL LICENCE OVERVIEW README* \
+                    /usr/share/doc/openssh-8.7p1
+echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+cd /sources
+rm -Rf openssh-8.7p1
+tar -xf blfs-bootscripts-20210826.tar.xz
+cd blfs-bootscripts-20210826
+make install-sshd
+cd /sources
+rm -Rf blfs-bootscripts-20210826
+
+# Cleaning Up
+rm -rf /tmp/*
+find /usr/lib /usr/libexec -name \*.la -delete
+find /usr -depth -name $(uname -m)-lfs-linux-gnu\* | xargs rm -rf
+userdel -r tester
+
+# LFS-Bootscripts-20210608
+# The LFS-Bootscripts package contains a set of scripts to start/stop the LFS system at bootup/shutdown. The configuration files and procedures needed to customize the boot process are described in the following sections.
+tar -xf lfs-bootscripts-20210608.tar.xz
+cd lfs-bootscripts-20210608
+make install
+cd /sources
+rm -Rf lfs-bootscripts-20210608
+
+# Creating Custom Udev Rules
+bash /usr/lib/udev/init-net-rules.sh
+
+# Creating Network Interface Configuration Files
+cd /etc/sysconfig/
+cat > ifconfig.eth0 << "EOF"
+ONBOOT=yes
+IFACE=eth0
+SERVICE=ipv4-static
+IP=192.168.42.111
+PREFIX=24
+BROADCAST=192.168.42.255
+EOF
+
+# Creating the /etc/resolv.conf File
+cat > /etc/resolv.conf << "EOF"
+# Début de /etc/resolv.conf
+
+nameserver 127.0.0.53
+options edns0 trust-ad
+
+# Fin de /etc/resolv.conf
+EOF
+
+# Configuring the system hostname
+echo "<zoulhafi>" > /etc/hostname
+
+# Customizing the /etc/hosts File
+cat > /etc/hosts << "EOF"
+# Begin /etc/hosts (network card version)
+
+127.0.0.1 localhost
+
+# End /etc/hosts (network card version)
+EOF
+
+# Configuring Sysvinit
+cat > /etc/inittab << "EOF"
+# Begin /etc/inittab
+
+id:3:initdefault:
+
+si::sysinit:/etc/rc.d/init.d/rc S
+
+l0:0:wait:/etc/rc.d/init.d/rc 0
+l1:S1:wait:/etc/rc.d/init.d/rc 1
+l2:2:wait:/etc/rc.d/init.d/rc 2
+l3:3:wait:/etc/rc.d/init.d/rc 3
+l4:4:wait:/etc/rc.d/init.d/rc 4
+l5:5:wait:/etc/rc.d/init.d/rc 5
+l6:6:wait:/etc/rc.d/init.d/rc 6
+
+ca:12345:ctrlaltdel:/sbin/shutdown -t1 -a -r now
+
+su:S016:once:/sbin/sulogin
+
+1:2345:respawn:/sbin/agetty --noclear tty1 9600
+2:2345:respawn:/sbin/agetty tty2 9600
+3:2345:respawn:/sbin/agetty tty3 9600
+4:2345:respawn:/sbin/agetty tty4 9600
+5:2345:respawn:/sbin/agetty tty5 9600
+6:2345:respawn:/sbin/agetty tty6 9600
+
+# End /etc/inittab
+EOF
+
+# Configuring the System Clock
+cat > /etc/sysconfig/clock << "EOF"
+# Begin /etc/sysconfig/clock
+
+UTC=1
+
+# Set this to any options you might need to give to hwclock,
+# such as machine hardware clock type for Alphas.
+CLOCKPARAMS=
+
+# End /etc/sysconfig/clock
+EOF
+
+# Creating the /etc/inputrc File
+# The inputrc file is the configuration file for the readline library, which provides editing capabilities while the user is entering a line from the terminal. It works by translating keyboard inputs into specific actions.
+cat > /etc/inputrc << "EOF"
+# Begin /etc/inputrc
+# Modified by Chris Lynn <roryo@roryo.dynup.net>
+
+# Allow the command prompt to wrap to the next line
+set horizontal-scroll-mode Off
+
+# Enable 8bit input
+set meta-flag On
+set input-meta On
+
+# Turns off 8th bit stripping
+set convert-meta Off
+
+# Keep the 8th bit for display
+set output-meta On
+
+# none, visible or audible
+set bell-style none
+
+# All of the following map the escape sequence of the value
+# contained in the 1st argument to the readline specific functions
+"\eOd": backward-word
+"\eOc": forward-word
+
+# for linux console
+"\e[1~": beginning-of-line
+"\e[4~": end-of-line
+"\e[5~": beginning-of-history
+"\e[6~": end-of-history
+"\e[3~": delete-char
+"\e[2~": quoted-insert
+
+# for xterm
+"\eOH": beginning-of-line
+"\eOF": end-of-line
+
+# for Konsole
+"\e[H": beginning-of-line
+"\e[F": end-of-line
+
+# End /etc/inputrc
+EOF
+
+# Creating the /etc/shells File
+# The shells file contains a list of login shells on the system. Applications use this file to determine whether a shell is valid. For each shell a single line should be present, consisting of the shell's path relative to the root of the directory structure (/).
+cat > /etc/shells << "EOF"
+# Begin /etc/shells
+
+/bin/sh
+/bin/bash
+
+# End /etc/shells
+EOF
+
+# Creating the /etc/fstab File
+cat > /etc/fstab << "EOF"
+# Begin /etc/fstab
+
+# file system  mount-point  type     options             dump  fsck
+#                                                              order
+
+/dev/sda2	swap	swap	pri=1	0	0
+/dev/sda3	/	ext4	defaults	0	1
+/dev/sda1	/boot	ext2	defaults	0	2
+proc           /proc        proc     nosuid,noexec,nodev 0     0
+sysfs          /sys         sysfs    nosuid,noexec,nodev 0     0
+devpts         /dev/pts     devpts   gid=5,mode=620      0     0
+tmpfs          /run         tmpfs    defaults            0     0
+devtmpfs       /dev         devtmpfs mode=0755,nosuid    0     0
+EOF
+
+# Linux-5.13.12
+# The Linux package contains the Linux kernel.
+cd /sources/
+tar -xf linux-5.13.12.tar.xz
+cd linux-5.13.12
+make mrproper
+cp ../.config
+make
+make modules_install
+cp -iv arch/x86/boot/bzImage /boot/vmlinuz-5.13.12-zoulhafi
+cp -iv System.map /boot/System.map-5.13.12
+cp -iv .config /boot/config-5.13.12
+install -d /usr/share/doc/linux-5.13.12
+cp -r Documentation/* /usr/share/doc/linux-5.13.12
+
+# Configuring Linux Module Load Order
+install -v -m755 -d /etc/modprobe.d
+cat > /etc/modprobe.d/usb.conf << "EOF"
+# Begin /etc/modprobe.d/usb.conf
+
+install ohci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i ohci_hcd ; true
+install uhci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i uhci_hcd ; true
+
+# End /etc/modprobe.d/usb.conf
+EOF
+
+# Creating the GRUB Configuration File
+dd if=/dev/zero of=/dev/sdb seek=1 count=2047
+grub-install /dev/sdb
+cat > /boot/grub/grub.cfg << "EOF"
+# Begin /boot/grub/grub.cfg
+set default=0
+set timeout=5
+
+insmod ext2
+set root=(hd0,1)
+
+menuentry "GNU/Linux, Linux 5.13.12-zoulhafi" {
+        linux   /vmlinuz-5.13.12-zoulhafi root=/dev/sda3 ro
+}
+EOF
