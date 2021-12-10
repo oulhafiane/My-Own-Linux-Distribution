@@ -1514,6 +1514,7 @@ rm -Rf blfs-bootscripts-20210826
 
 # Cleaning Up
 rm -rf /tmp/*
+rm -Rf /etc/sysconfig/console
 find /usr/lib /usr/libexec -name \*.la -delete
 find /usr -depth -name $(uname -m)-lfs-linux-gnu\* | xargs rm -rf
 userdel -r tester
