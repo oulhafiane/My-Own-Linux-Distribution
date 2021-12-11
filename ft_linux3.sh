@@ -1512,6 +1512,62 @@ make install-sshd
 cd /sources
 rm -Rf blfs-bootscripts-20210826
 
+# cURL-7.78.0
+# The cURL package contains an utility and a library used for transferring files with URL syntax to any of the following protocols: FTP, FTPS, HTTP, HTTPS, SCP, SFTP, TFTP, TELNET, DICT, LDAP, LDAPS and FILE. Its ability to both download and upload files can be incorporated into other programs to support functions like streaming media.
+tar -xf curl-7.78.0.tar.xz
+cd curl-7.78.0
+grep -rl '#!.*python$' | xargs sed -i '1s/python/&3/'
+./configure --prefix=/usr                           \
+            --disable-static                        \
+            --with-openssl                          \
+            --enable-threaded-resolver              \
+            --with-ca-path=/etc/ssl/certs &&
+make
+make install &&
+
+rm -rf docs/examples/.deps &&
+
+find docs \( -name Makefile\* -o -name \*.1 -o -name \*.3 \) -exec rm {} \; &&
+
+install -v -d -m755 /usr/share/doc/curl-7.78.0 &&
+cp -v -R docs/*     /usr/share/doc/curl-7.78.0
+cd /sources/
+rm -Rf curl-7.78.0
+
+# Git-2.33.0
+# Git is a free and open source, distributed version control system designed to handle everything from small to very large projects with speed and efficiency. Every Git clone is a full-fledged repository with complete history and full revision tracking capabilities, not dependent on network access or a central server. Branching and merging are fast and easy to do. 
+tar -xf git-2.33.0.tar.xz
+cd git-2.33.0
+./configure --prefix=/usr \
+            --with-gitconfig=/etc/gitconfig \
+            --with-python=python3 &&
+make
+make perllibdir=/usr/lib/perl5/5.34/site_perl install
+tar -xf ../git-manpages-2.33.0.tar.xz \
+    -C /usr/share/man --no-same-owner --no-overwrite-dir
+mkdir -vp   /usr/share/doc/git-2.33.0 &&
+tar   -xf   ../git-htmldocs-2.33.0.tar.xz \
+      -C    /usr/share/doc/git-2.33.0 --no-same-owner --no-overwrite-dir &&
+
+find        /usr/share/doc/git-2.33.0 -type d -exec chmod 755 {} \; &&
+find        /usr/share/doc/git-2.33.0 -type f -exec chmod 644 {} \;
+mkdir -vp /usr/share/doc/git-2.33.0/man-pages/{html,text}         &&
+mv        /usr/share/doc/git-2.33.0/{git*.txt,man-pages/text}     &&
+mv        /usr/share/doc/git-2.33.0/{git*.,index.,man-pages/}html &&
+
+mkdir -vp /usr/share/doc/git-2.33.0/technical/{html,text}         &&
+mv        /usr/share/doc/git-2.33.0/technical/{*.txt,text}        &&
+mv        /usr/share/doc/git-2.33.0/technical/{*.,}html           &&
+
+mkdir -vp /usr/share/doc/git-2.33.0/howto/{html,text}             &&
+mv        /usr/share/doc/git-2.33.0/howto/{*.txt,text}            &&
+mv        /usr/share/doc/git-2.33.0/howto/{*.,}html               &&
+
+sed -i '/^<a href=/s|howto/|&html/|' /usr/share/doc/git-2.33.0/howto-index.html &&
+sed -i '/^\* link:/s|howto/|&html/|' /usr/share/doc/git-2.33.0/howto-index.txt
+cd /sources/
+rm -Rf git-2.33.0
+
 # Cleaning Up
 rm -rf /tmp/*
 rm -Rf /etc/sysconfig/console
