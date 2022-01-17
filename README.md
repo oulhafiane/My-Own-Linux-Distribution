@@ -1,6 +1,6 @@
 [![42 Profile Card](https://1337-readme.vercel.app/api/profile?cursus=42cursus&login=zoulhafi)](https://github.com/mohouyizme/1337-readme)
-# 1337-42-ft_linux
-Make your own linux distribution
+# My Own Distribution Of Linux
+ft_linux is a school project helps you to make your own linux distribution
 
 ## Introduction
 Welcome to ft_linux.  
